@@ -13,6 +13,8 @@ Featuring syntax highlighting for over 150 languages and more than 35 themes, Ti
 
 <sub>**Caution!** _Avoid utilizing this script as a standard file manager in public spaces. It is imperative to remove this script from the server after completing any tasks._</sub>
 
+> I've modified this fork by this gemini-cli prompt. Hope it help others: I want to show at first login (when admin pass is this has: $2y$10$/K.hjNr84lLNDt8fTXjoI.DBp6PpeyoJ.mGwrrLuCZfAwfSAGqhOW) to let user change the password. and then allow to login. the welcmome page that changes the password should match the theme of login screen. when  user save new  password it should use php function : password_hash('NewStrongPassword', PASSWORD_DEFAULT) ... to create hash and save it  against admin user. Also remove the user named 'user' in $auth_users. When user log in, In the settings add a new section to change the password. add two fields to retype matched password and if correct, update the logged in user password hash.
+
 ## Demo
 
 [Demo](https://tinyfilemanager.github.io/demo/)
