@@ -13,11 +13,15 @@ Featuring syntax highlighting for over 150 languages and more than 35 themes, Ti
 
 <sub>**Caution!** _Avoid utilizing this script as a standard file manager in public spaces. It is imperative to remove this script from the server after completing any tasks._</sub>
 
-> i want to show at first login (when admin pass is this has: $2y$10$/K.hjNr84lLNDt8fTXjoI.DBp6PpeyoJ.mGwrrLuCZfAwfSAGqhOW) to let user change the password. and then allow to login. the welcome page that changes the password should match the theme of login screen, with a message: 'Set a new Password'. When  user save new  password it should use php function : password_hash('NewStrongPassword', PASSWORD_DEFAULT) ... to create hash and save it  against admin user. Write plain text password in comments as well as before.
+## Gemini-Cli prompt for this fork
 
-> Remove the user named 'user' in $auth_users.
+> 1. I want to show at first login (when admin pass is this has: $2y$10$/K.hjNr84lLNDt8fTXjoI.DBp6PpeyoJ.mGwrrLuCZfAwfSAGqhOW) to let user change the password. and then allow to login. the welcome page that changes the password should match the theme of login screen, with a message: 'Set a new Password'. When  user save new  password it should use php function : password_hash('NewStrongPassword', PASSWORD_DEFAULT) ... to create hash and save it  against admin user. Write plain text password in comments as well as before.
 
-> When user log in, In the settings add a new section to change the password. add two fields to retype matched password and if correct, update the logged in user password hash.
+> 2. Remove the user named 'user' in $auth_users.
+
+> 3. When user log in, In the settings add a new section to change the password. add two fields to retype matched password and if correct, update the logged in user password hash.
+
+> 4. If password update fails due to any reason, display the error message as well.
 
 ## Demo
 
