@@ -27,13 +27,11 @@ $use_auth = true;
 // Generate secure password hash - https://tinyfilemanager.github.io/docs/pwd.html
 $auth_users = array(
     'admin' => '$2y$10$/K.hjNr84lLNDt8fTXjoI.DBp6PpeyoJ.mGwrrLuCZfAwfSAGqhOW', //admin@123
-    'user' => '$2y$10$Fg6Dz8oH9fPoZ2jJan5tZuv6Z4Kp7avtQ9bDfrdRntXtPeiMAZyGO' //12345
 );
 
 // Readonly users
 // e.g. array('users', 'guest', ...)
 $readonly_users = array(
-    'user'
 );
 
 // Global readonly, including when auth is not being used
@@ -272,6 +270,128 @@ $root_url = fm_clean_path($root_url);
 defined('FM_ROOT_URL') || define('FM_ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . (!empty($root_url) ? '/' . $root_url : ''));
 defined('FM_SELF_URL') || define('FM_SELF_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . $_SERVER['PHP_SELF']);
 
+if (isset($_GET['change_password'])) {
+    if (isset($_SESSION[FM_SESSION_ID]['tmp_login'])) {
+        if (isset($_POST['fm_pwd_new'], $_POST['fm_pwd_confirm'])) {
+            $new_pwd = $_POST['fm_pwd_new'];
+            $confirm_pwd = $_POST['fm_pwd_confirm'];
+
+            if ($new_pwd !== $confirm_pwd) {
+                fm_set_msg('Passwords do not match', 'error');
+                fm_redirect(FM_SELF_URL . '?p=&change_password=true');
+            }
+
+            $new_pwd_hash = password_hash($new_pwd, PASSWORD_DEFAULT);
+
+            $lines = file(__FILE__);
+            foreach ($lines as $key => $line) {
+                if (strpos($line, "'admin' =>") !== false) {
+                    $lines[$key] = "    'admin' => '" . $new_pwd_hash . "', //" . $new_pwd . "\n";
+                    break;
+                }
+            }
+
+            if (file_put_contents(__FILE__, implode("", $lines))) {
+                $auth_users['admin'] = $new_pwd_hash;
+                unset($_SESSION[FM_SESSION_ID]['tmp_login']);
+                fm_set_msg('Password updated successfully. Please login again.');
+                fm_redirect(FM_SELF_URL);
+            } else {
+                fm_set_msg('Failed to update password. Please check file permissions.', 'error');
+                fm_redirect(FM_SELF_URL . '?p=&change_password=true');
+            }
+        } else {
+            fm_show_header_login();
+            ?>
+            <section class="h-100">
+                <div class="container h-100">
+                    <div class="row justify-content-md-center align-content-center h-100vh">
+                        <div class="card-wrapper">
+                            <div class="card fat" data-bs-theme="<?php echo FM_THEME; ?>">
+                                <div class="card-body">
+                                    <form class="form-signin" action="" method="post" autocomplete="off">
+                                        <div class="mb-3">
+                                            <div class="brand">
+                                                <svg version="1.0" xmlns="http://www.w3.org/2000/svg" M1008 width="100%" height="80px" viewBox="0 0 238.000000 140.000000" aria-label="H3K Tiny File Manager">
+                                                    <g transform="translate(0.000000,140.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                                                        <path d="M160 700 l0 -600 110 0 110 0 0 260 0 260 70 0 70 0 0 -260 0 -260 110 0 110 0 0 600 0 600 -110 0 -110 0 0 -260 0 -260 -70 0 -70 0 0 260 0 260 -110 0 -110 0 0 -600z" />
+                                                        <path fill="#003500" d="M1008 1227 l-108 -72 0 -117 0 -118 110 0 110 0 0 110 0 110 70 0 70 0 0 -180 0 -180 -125 0 c-69 0 -125 -3 -125 -6 0 -3 23 -39 52 -80 l52 -74 73 0 73 0 0 -185 0 -185 -70 0 -70 0 0 115 0 115 -110 0 -110 0 0 -190 0 -190 181 0 181 0 109 73 108 72 1 181 0 181 -69 48 -68 49 68 50 69 49 0 249 0 248 -182 -1 -183 0 -107 -72z" />
+                                                        <path d="M1640 700 l0 -600 110 0 110 0 0 208 0 208 35 34 35 34 35 -34 35 -34 0 -208 0 -208 110 0 110 0 0 212 0 213 -87 87 -88 88 88 88 87 87 0 213 0 212 -110 0 -110 0 0 -208 0 -208 -70 -69 -70 -69 0 277 0 277 -110 0 -110 0 0 -600z" />
+                                                    </g>
+                                                </svg>
+                                            </div>
+                                            <div class="text-center">
+                                                <h1 class="card-title">Set a new Password</h1>
+                                            </div>
+                                        </div>
+                                        <?php fm_show_message(); ?>
+                                        <hr />
+                                        <div class="mb-3">
+                                            <label for="fm_pwd" class="pb-2">New Password</label>
+                                            <input type="password" class="form-control" id="fm_pwd" name="fm_pwd_new" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="fm_pwd_confirm" class="pb-2">Confirm New Password</label>
+                                            <input type="password" class="form-control" id="fm_pwd_confirm" name="fm_pwd_confirm" required>
+                                        </div>
+                                        <input type="hidden" name="token" value="<?php echo htmlentities($_SESSION['token']); ?>" />
+                                        <div class="mb-3">
+                                            <button type="submit" class="btn btn-success btn-block w-100 mt-4" role="button">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="footer text-center">
+                                &mdash;&mdash; &copy;
+                                <a href="https://tinyfilemanager.github.io/" target="_blank" class="text-decoration-none text-muted" data-version="<?php echo VERSION; ?>">CCP Programmers</a> &mdash;&mdash;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        <?php
+            fm_show_footer_login();
+            exit;
+        }
+    }
+}
+
+if (isset($_POST['change_password_action'])) {
+    if (isset($_SESSION[FM_SESSION_ID]['tmp_login'])) {
+        $new_pwd = $_POST['fm_pwd_new'];
+        $confirm_pwd = $_POST['fm_pwd_confirm'];
+
+        if ($new_pwd !== $confirm_pwd) {
+            fm_set_msg('Passwords do not match', 'error');
+            fm_redirect(FM_SELF_URL . '?p=&change_password=true');
+        }
+
+        $new_pwd_hash = password_hash($new_pwd, PASSWORD_DEFAULT);
+
+        // In a real application, you would update this in a database or a configuration file.
+        // For this example, we are modifying the file directly.
+        $file_content = file_get_contents(__FILE__);
+        $new_auth_users = preg_replace(
+            '/(\'admin\' => \').*(\', \/\/admin@123)/',
+            '$1' . $new_pwd_hash . '$2',
+            $file_content
+        );
+
+        if (file_put_contents(__FILE__, $new_auth_users)) {
+            $auth_users['admin'] = $new_pwd_hash;
+            unset($_SESSION[FM_SESSION_ID]['tmp_login']);
+            fm_set_msg('Password updated successfully. Please login again.');
+            fm_redirect(FM_SELF_URL);
+        } else {
+            fm_set_msg('Failed to update password. Please check file permissions.', 'error');
+            fm_redirect(FM_SELF_URL . '?p=&change_password=true');
+        }
+    }
+}
+
 // logout
 if (isset($_GET['logout'])) {
     unset($_SESSION[FM_SESSION_ID]['logged']);
@@ -332,6 +452,10 @@ if ($use_auth) {
         sleep(1);
         if (function_exists('password_verify')) {
             if (isset($auth_users[$_POST['fm_usr']]) && isset($_POST['fm_pwd']) && password_verify($_POST['fm_pwd'], $auth_users[$_POST['fm_usr']]) && verifyToken($_POST['token'])) {
+                if ($_POST['fm_usr'] === 'admin' && password_verify('admin@123', $auth_users['admin'])) {
+                    $_SESSION[FM_SESSION_ID]['tmp_login'] = 'admin';
+                    fm_redirect(FM_SELF_URL . '?p=&change_password=true');
+                }
                 $_SESSION[FM_SESSION_ID]['logged'] = $_POST['fm_usr'];
                 fm_set_msg(lng('You are logged in'));
                 fm_redirect(FM_SELF_URL);
@@ -577,6 +701,37 @@ if ((isset($_SESSION[FM_SESSION_ID]['logged'], $auth_users[$_SESSION[FM_SESSION_
     if (isset($_POST['type']) && $_POST['type'] == "pwdhash") {
         $res = isset($_POST['inputPassword2']) && !empty($_POST['inputPassword2']) ? password_hash($_POST['inputPassword2'], PASSWORD_DEFAULT) : '';
         echo $res;
+    }
+
+    // change password
+    if (isset($_POST['type']) && $_POST['type'] == "change_password") {
+        $new_pwd = $_POST['new_password'];
+        $confirm_pwd = $_POST['confirm_password'];
+
+        if ($new_pwd !== $confirm_pwd) {
+            $response = array('status' => 'error', 'info' => 'Passwords do not match');
+            echo json_encode($response);
+            exit();
+        }
+
+        $user = $_SESSION[FM_SESSION_ID]['logged'];
+        $new_pwd_hash = password_hash($new_pwd, PASSWORD_DEFAULT);
+
+        $lines = file(__FILE__);
+        foreach ($lines as $key => $line) {
+            if (strpos($line, "'" . $user . "' =>") !== false) {
+                $lines[$key] = "    '" . $user . "' => '" . $new_pwd_hash . "', //\n";
+                break;
+            }
+        }
+
+        if (file_put_contents(__FILE__, implode("", $lines))) {
+            $response = array('status' => 'success', 'info' => 'Password updated successfully');
+        } else {
+            $response = array('status' => 'error', 'info' => 'Failed to update password. Please check file permissions.');
+        }
+        echo json_encode($response);
+        exit();
     }
 
     //upload using url
@@ -1640,13 +1795,61 @@ if (isset($_GET['settings']) && !FM_READONLY) {
                         </div>
                     </div>
 
-                    <small class="text-body-secondary">* <?php echo lng('Sometimes the save action may not work on the first try, so please attempt it again') ?>.</span>
+                    <small class="text-body-secondary">* <?php echo lng('Sometimes the save action may not work on the first try, so please attempt it again') ?>.</small>
                 </form>
+
+                <hr/>
+
+                <form id="js-change-password-form" action="" method="post" onsubmit="return change_password(this)">
+                    <input type="hidden" name="type" value="change_password" aria-label="hidden" aria-hidden="true">
+                    <div class="mb-3 row">
+                        <label for="js-new-password" class="col-sm-3 col-form-label">New Password</label>
+                        <div class="col-sm-5">
+                            <input type="password" class="form-control" id="js-new-password" name="new_password" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row mt-3">
+                        <label for="js-confirm-password" class="col-sm-3 col-form-label">Confirm Password</label>
+                        <div class="col-sm-5">
+                            <input type="password" class="form-control" id="js-confirm-password" name="confirm_password" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row mt-3">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-success"> <i class="fa fa-check-circle"></i> Save Password</button>
+                        </div>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
 <?php
     fm_show_footer();
+    ?>
+    <script>
+    function change_password(form) {
+        $.ajax({
+            url: "",
+            type: "POST",
+            data: $(form).serialize() + "&token=" + window.csrf + "&ajax=true",
+            dataType: 'json',
+            success: function(response) {
+                if (response.status == "success") {
+                    toast(response.info);
+                    setTimeout(function() { location.reload(); }, 2000);
+                } else {
+                    toast(response.info, "error");
+                }
+            },
+            error: function() {
+                toast("An error occurred while changing the password.", "error");
+            }
+        });
+        return false;
+    }
+    </script>
+    <?php
     exit;
 }
 
