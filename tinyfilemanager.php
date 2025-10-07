@@ -5369,7 +5369,7 @@ function fm_show_header_login()
                     path: "ace/mode/<?php echo $ext; ?>",
                     inline: true
                 });
-                //editor.setTheme("ace/theme/twilight"); // Dark Theme
+                editor.setTheme("ace/theme/cobalt"); // Dark Theme
                 editor.setShowPrintMargin(false); // Hide the vertical ruler
                 function ace_commend(cmd) {
                     editor.commands.exec(cmd, editor);
@@ -5629,7 +5629,7 @@ function fm_show_header_login()
                     $themeEl.val(editor.getTheme());
                     $(function() {
                         //set default font size in drop down
-                        $fontSizeEl.val(12).change();
+                        $fontSizeEl.val(14).change();
                     });
                 }
 
