@@ -23,6 +23,7 @@ Featuring syntax highlighting for over 150 languages and more than 35 themes, Ti
 
 > 4. If password update fails due to any reason, display the error message as well.
 
+> 5. Add option to remember for 6 months
 ## Demo
 
 [Demo](https://tinyfilemanager.github.io/demo/)
